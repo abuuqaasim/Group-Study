@@ -59,8 +59,8 @@ def process_video(video_path, output_path, lapsrn_model,process_every=1):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     print(f"Original FPS: {fps}, Width: {width}, Height: {height}")
 
-    original_image_path = "/home/aro/Schreibtisch/virtual_python/SuperResolution/Group Study/Output/Images/margin/original4"  #Adjust the parent directory as needed
-    upsampled_image_path = "/home/aro/Schreibtisch/virtual_python/SuperResolution/Group Study/Output/Images/margin/upsampled4" #Adjust the parent directory as needed
+    original_image_path = "/home/aro/Schreibtisch/virtual_python/SuperResolution/Group Study/Output/Images/margin/original"  #Adjust the parent directory as needed
+    upsampled_image_path = "/home/aro/Schreibtisch/virtual_python/SuperResolution/Group Study/Output/Images/margin/upsampled" #Adjust the parent directory as needed
 
     # Ensure directories exist
     os.makedirs(original_image_path, exist_ok=True)
@@ -101,24 +101,30 @@ def process_video(video_path, output_path, lapsrn_model,process_every=1):
 
                     cropped_face_with_margin = frame[y_start:y_end, x_start:x_end]
 
-                    upscaled_face = upscale_with_real_lapsrn(cropped_face_with_margin, lapsrn_model)
+                    upsampled_face = upscale_with_real_lapsrn(cropped_face_with_margin, lapsrn_model)
 
-                    sharpened_face = sharpen_image(upscaled_face)
+                    sharpened_face = sharpen_image(upsampled_face)
 
                     if face_detection.process(sharpened_face):
                         print('Redetection is successful!')
 
-                        # Position the upscaled face exactly where the original face was without reducing its size
+                        # Position the upsampled face exactly where the original face was without reducing its size
                         new_x = max(0, x_start)
                         new_y = max(0, y_start)
 
-                        # Determine the size of the upscaled face
+                        '''
+                        the variable 'sharpened_face' is the result of the upsampling after confirmation by redetection.
+                        '''
+
+                        # Determine the size of the upsmapled face
                         new_w = min(sharpened_face.shape[1], frame.shape[1] - new_x)
                         new_h = min(sharpened_face.shape[0], frame.shape[0] - new_y)
 
                         # Place the upscaled face in the image
                         frame[new_y:new_y + new_h, new_x:new_x + new_w] = sharpened_face[:new_h, :new_w]
                         cv2.imwrite(os.path.join(upsampled_image_path,f'upscaled_detection_{detection_count}.png'), sharpened_face)
+
+
 
                         # Draw the bounding box
                         cv2.rectangle(frame, (new_x, new_y), (new_x + new_w, new_y + new_h), (0, 255, 0), 2)
